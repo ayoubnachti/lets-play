@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: lets-play
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/lets-play}
+
+server:
+  port: 8080
