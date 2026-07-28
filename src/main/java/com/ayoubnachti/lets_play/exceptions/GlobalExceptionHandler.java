@@ -2,13 +2,13 @@ package com.ayoubnachti.lets_play.exceptions;
 
 import java.util.NoSuchElementException;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.mongodb.DuplicateKeyException;
 
 import lombok.extern.slf4j.Slf4j;
 
