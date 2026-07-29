@@ -21,6 +21,7 @@ public class AuthService {
 
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
+  private final JwtService JwtService;
 
   public User register(RegisterRequest request) {
     User user = User.builder()
@@ -31,5 +32,16 @@ public class AuthService {
         .build();
 
     return userRepository.save(user);
+  }
+
+  public String login(LoginRequest request) {
+    User user = userRepository.findByEmail(request.email())
+        .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
+
+    if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+      throw new BadCredentialsException("Invalid email or password");
+    }
+
+    return JwtService.generateToken(user);
   }
 }
