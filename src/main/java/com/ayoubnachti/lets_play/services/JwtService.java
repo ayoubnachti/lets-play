@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.ayoubnachti.lets_play.models.User;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -22,15 +23,26 @@ public class JwtService {
     @Value("${jwt.expiration-ms}")
     private long expirationMs;
 
-    public String generateToken(User user) {
-        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
 
-        return Jwts.builder()
-                .subject(user.getEmail())
-                .claim("role", user.getRole().name())
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expirationMs))
-                .signWith(key)
-                .compact();
+    public String generateToken(User user) {
+    return Jwts.builder()
+            .subject(user.getEmail())
+            .claim("role", user.getRole().name())
+            .claim("userId", user.getId())
+            .issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() + expirationMs))
+            .signWith(getSigningKey())
+            .compact();
+}
+
+    public Claims parseClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }
