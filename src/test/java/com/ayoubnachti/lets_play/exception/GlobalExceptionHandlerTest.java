@@ -60,4 +60,11 @@ class GlobalExceptionHandlerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Bad Request"));
     }
+    @Test
+    void noResourceFoundReturns404() throws Exception {
+        mockMvc.perform(get("/this/route/does/not/exist"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Not Found"))
+                .andExpect(jsonPath("$.detail").value("The requested endpoint does not exist"));
+    }
 }
