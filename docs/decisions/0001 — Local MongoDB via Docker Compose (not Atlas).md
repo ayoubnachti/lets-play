@@ -9,5 +9,5 @@ Use Docker Compose to run MongoDB locally for day-to-day development. Atlas is n
 
 ## Consequences
 - Positive: zero external dependency to start developing — `docker compose up` and you're connected; matches the existing Compose pattern from other projects; consistent with how CI/Test-containers already treats Mongo as ephemeral and disposable. 
-- Negative: doesn't exercise "connect to a real remote cluster" as a skill — if that's ever a gap worth closing, it should be a deliberate follow-up, not implicit. 
-- Follow-up: connection string must still be externalized (env var / `.env`), not hardcoded, even though it's "just localhost" — keeps the habit consistent regardless of environment.
+- Negative: no local exposure to a managed remote cluster's operational quirks (connection pooling limits, network latency, IP allowlisting) — irrelevant at this project's scale, but would matter if this ever needed to model a production-like remote-DB setup. 
+- Follow-up: connection string must still be externalized (env var / `.env`), not hardcoded — avoids a config leak if this ever needs to point somewhere non-local.
