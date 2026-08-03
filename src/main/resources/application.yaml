@@ -1,9 +1,10 @@
 spring:
   application:
     name: lets-play
+  mongodb:
+    uri: ${MONGODB_URI:mongodb://localhost:27017/lets-play}
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/lets-play}
       auto-index-creation: true
 
 jwt:
@@ -12,3 +13,8 @@ jwt:
 
 server:
   port: 8080
+
+admin:
+  seed:
+    email: ${ADMIN_EMAIL:admin@gmail.com}
+    password: ${ADMIN_PASSWORD:admin123456789}
