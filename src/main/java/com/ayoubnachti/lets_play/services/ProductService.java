@@ -72,4 +72,10 @@ public class ProductService {
 
     productRepository.deleteById(id);
   }
+
+  public ProductResponse findById(String id) {
+    Product product = productRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+    return ProductResponse.from(product);
+  }
 }

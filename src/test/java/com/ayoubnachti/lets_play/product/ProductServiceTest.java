@@ -149,7 +149,7 @@ class ProductServiceTest {
     @Test
     void deleteProduct_deletesProduct_whenOwner() {
         Product product = Product.builder().id("p1").userId("u1").build();
-        AuthenticatedUser owner = new AuthenticatedUser("u1","owner@test.com", "USER");
+        AuthenticatedUser owner = new AuthenticatedUser("u1", "owner@test.com", "USER");
         when(productRepository.findById("p1")).thenReturn(Optional.of(product));
 
         productService.deleteProduct("p1", owner);
@@ -160,7 +160,7 @@ class ProductServiceTest {
     @Test
     void deleteProduct_deletesProduct_whenAdmin() {
         Product product = Product.builder().id("p1").userId("u1").build();
-        AuthenticatedUser admin = new AuthenticatedUser("u2","admin@test.com", "ADMIN");
+        AuthenticatedUser admin = new AuthenticatedUser("u2", "admin@test.com", "ADMIN");
         when(productRepository.findById("p1")).thenReturn(Optional.of(product));
 
         productService.deleteProduct("p1", admin);
@@ -171,7 +171,7 @@ class ProductServiceTest {
     @Test
     void deleteProduct_throwsNotFound_whenProductMissing() {
         when(productRepository.findById("p1")).thenReturn(Optional.empty());
-        AuthenticatedUser user = new AuthenticatedUser("u1","owner@test.com", "USER");
+        AuthenticatedUser user = new AuthenticatedUser("u1", "owner@test.com", "USER");
 
         assertThatThrownBy(() -> productService.deleteProduct("p1", user))
                 .isInstanceOf(ResourceNotFoundException.class);
@@ -182,12 +182,40 @@ class ProductServiceTest {
     @Test
     void deleteProduct_throwsAccessDenied_whenNotOwnerNorAdmin() {
         Product product = Product.builder().id("p1").userId("u1").build();
-        AuthenticatedUser other = new AuthenticatedUser("u2","other@test.com", "USER");
+        AuthenticatedUser other = new AuthenticatedUser("u2", "other@test.com", "USER");
         when(productRepository.findById("p1")).thenReturn(Optional.of(product));
 
         assertThatThrownBy(() -> productService.deleteProduct("p1", other))
                 .isInstanceOf(AccessDeniedException.class);
 
         verify(productRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void findById_returnsProduct_whenProductExists() {
+        Product product = Product.builder()
+                .id("1")
+                .name("Banane")
+                .description("Mooooooooooochti banan")
+                .price(12.)
+                .userId("user-1")
+                .createdAt(Instant.parse("2026-07-01T10:00:00Z"))
+                .updatedAt(Instant.parse("2026-07-01T10:00:00Z"))
+                .build();
+
+        when(productRepository.findById("1")).thenReturn(Optional.of(product));
+
+        ProductResponse result = productService.findById("1");
+
+        assertThat(result.id()).isEqualTo("1");
+        assertThat(result.name()).isEqualTo("Banane");
+    }
+
+    @Test
+    void findById_throwsResourceNotFound_whenProductDoesNotExist() {
+        when(productRepository.findById("missing")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> productService.findById("missing"))
+                .isInstanceOf(ResourceNotFoundException.class);
     }
 }
