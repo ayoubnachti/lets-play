@@ -2,6 +2,9 @@ package com.ayoubnachti.lets_play.product;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
@@ -141,5 +144,50 @@ class ProductServiceTest {
 
         assertThatThrownBy(() -> productService.updateProduct("1", request, currentUser))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void deleteProduct_deletesProduct_whenOwner() {
+        Product product = Product.builder().id("p1").userId("u1").build();
+        AuthenticatedUser owner = new AuthenticatedUser("u1","owner@test.com", "USER");
+        when(productRepository.findById("p1")).thenReturn(Optional.of(product));
+
+        productService.deleteProduct("p1", owner);
+
+        verify(productRepository).deleteById("p1");
+    }
+
+    @Test
+    void deleteProduct_deletesProduct_whenAdmin() {
+        Product product = Product.builder().id("p1").userId("u1").build();
+        AuthenticatedUser admin = new AuthenticatedUser("u2","admin@test.com", "ADMIN");
+        when(productRepository.findById("p1")).thenReturn(Optional.of(product));
+
+        productService.deleteProduct("p1", admin);
+
+        verify(productRepository).deleteById("p1");
+    }
+
+    @Test
+    void deleteProduct_throwsNotFound_whenProductMissing() {
+        when(productRepository.findById("p1")).thenReturn(Optional.empty());
+        AuthenticatedUser user = new AuthenticatedUser("u1","owner@test.com", "USER");
+
+        assertThatThrownBy(() -> productService.deleteProduct("p1", user))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(productRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void deleteProduct_throwsAccessDenied_whenNotOwnerNorAdmin() {
+        Product product = Product.builder().id("p1").userId("u1").build();
+        AuthenticatedUser other = new AuthenticatedUser("u2","other@test.com", "USER");
+        when(productRepository.findById("p1")).thenReturn(Optional.of(product));
+
+        assertThatThrownBy(() -> productService.deleteProduct("p1", other))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(productRepository, never()).deleteById(any());
     }
 }

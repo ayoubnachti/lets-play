@@ -58,4 +58,18 @@ public class ProductService {
     Product saved = productRepository.save(product);
     return ProductResponse.from(saved);
   }
+
+  public void deleteProduct(String id, AuthenticatedUser currentUser) {
+    Product product = productRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+
+    boolean isOwner = product.getUserId().equals(currentUser.id());
+    boolean isAdmin = Role.valueOf(currentUser.role()) == Role.ADMIN;
+
+    if (!isOwner && !isAdmin) {
+      throw new AccessDeniedException("Not authorized to delete this product");
+    }
+
+    productRepository.deleteById(id);
+  }
 }
