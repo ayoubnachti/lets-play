@@ -1,10 +1,12 @@
 package com.ayoubnachti.lets_play.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.ayoubnachti.lets_play.dtos.UserResponse;
 import com.ayoubnachti.lets_play.enums.Role;
+import com.ayoubnachti.lets_play.exceptions.custom.ResourceNotFoundException;
 import com.ayoubnachti.lets_play.models.User;
 import com.ayoubnachti.lets_play.repositories.UserRepository;
 import com.ayoubnachti.lets_play.services.UserService;
@@ -75,5 +78,33 @@ class UserServiceTest {
         List<UserResponse> result = userService.findAll();
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void findById_returnsUser_whenUserExists() {
+        User user = User.builder()
+                .id("1")
+                .name("Ayoub")
+                .email("ayoub@test.com")
+                .password("hashed-password")
+                .role(Role.USER)
+                .createdAt(Instant.parse("2026-07-01T10:00:00Z"))
+                .updatedAt(Instant.parse("2026-07-01T10:00:00Z"))
+                .build();
+
+        when(userRepository.findById("1")).thenReturn(Optional.of(user));
+
+        UserResponse result = userService.findById("1");
+
+        assertThat(result.id()).isEqualTo("1");
+        assertThat(result.email()).isEqualTo("ayoub@test.com");
+    }
+
+    @Test
+    void findById_throwsResourceNotFound_whenUserDoesNotExist() {
+        when(userRepository.findById("missing")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.findById("missing"))
+                .isInstanceOf(ResourceNotFoundException.class);
     }
 }
