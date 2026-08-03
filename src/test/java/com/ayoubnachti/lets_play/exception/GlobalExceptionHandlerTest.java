@@ -41,7 +41,7 @@ class GlobalExceptionHandlerTest {
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Not Found"))
-                .andExpect(jsonPath("$.detail").value("Product not found"));
+                .andExpect(jsonPath("$.detail").value("Product not found: test-id"));
     }
 
     @Test
