@@ -1,20 +1,26 @@
 package com.ayoubnachti.lets_play.product;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
+import com.ayoubnachti.lets_play.dtos.ProductRequest;
 import com.ayoubnachti.lets_play.dtos.ProductResponse;
+import com.ayoubnachti.lets_play.exceptions.custom.ResourceNotFoundException;
 import com.ayoubnachti.lets_play.models.Product;
 import com.ayoubnachti.lets_play.repositories.ProductRepository;
+import com.ayoubnachti.lets_play.security.AuthenticatedUser;
 import com.ayoubnachti.lets_play.services.ProductService;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,5 +61,85 @@ class ProductServiceTest {
         List<ProductResponse> result = productService.findAll();
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void updateProduct_updatesAndReturnsProduct_whenUserIsOwner() {
+        Product existing = Product.builder()
+                .id("1")
+                .name("Old Name")
+                .description("Old description")
+                .price(10.)
+                .userId("user-1")
+                .createdAt(Instant.parse("2026-07-01T10:00:00Z"))
+                .updatedAt(Instant.parse("2026-07-01T10:00:00Z"))
+                .build();
+
+        ProductRequest request = new ProductRequest("New Name", "New description", 20.);
+        AuthenticatedUser currentUser = new AuthenticatedUser("user-1", "owner@test.com", "USER");
+
+        when(productRepository.findById("1")).thenReturn(Optional.of(existing));
+        when(productRepository.save(existing)).thenReturn(existing);
+
+        ProductResponse result = productService.updateProduct("1", request, currentUser);
+
+        assertThat(result.name()).isEqualTo("New Name");
+        assertThat(result.description()).isEqualTo("New description");
+        assertThat(result.price()).isEqualTo(20.);
+    }
+
+    @Test
+    void updateProduct_updatesAndReturnsProduct_whenUserIsAdmin() {
+        Product existing = Product.builder()
+                .id("1")
+                .name("Old Name")
+                .description("Old description")
+                .price(10.)
+                .userId("user-1")
+                .createdAt(Instant.parse("2026-07-01T10:00:00Z"))
+                .updatedAt(Instant.parse("2026-07-01T10:00:00Z"))
+                .build();
+
+        ProductRequest request = new ProductRequest("New Name", "New description", 20.);
+        AuthenticatedUser currentUser = new AuthenticatedUser("admin-1", "admin@test.com", "ADMIN");
+
+        when(productRepository.findById("1")).thenReturn(Optional.of(existing));
+        when(productRepository.save(existing)).thenReturn(existing);
+
+        ProductResponse result = productService.updateProduct("1", request, currentUser);
+
+        assertThat(result.name()).isEqualTo("New Name");
+    }
+
+    @Test
+    void updateProduct_throwsAccessDenied_whenUserIsNeitherOwnerNorAdmin() {
+        Product existing = Product.builder()
+                .id("1")
+                .name("Old Name")
+                .description("Old description")
+                .price(10.)
+                .userId("user-1")
+                .createdAt(Instant.parse("2026-07-01T10:00:00Z"))
+                .updatedAt(Instant.parse("2026-07-01T10:00:00Z"))
+                .build();
+
+        ProductRequest request = new ProductRequest("New Name", "New description", 20.);
+        AuthenticatedUser currentUser = new AuthenticatedUser("user-2", "other@test.com", "USER");
+
+        when(productRepository.findById("1")).thenReturn(Optional.of(existing));
+
+        assertThatThrownBy(() -> productService.updateProduct("1", request, currentUser))
+                .isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void updateProduct_throwsResourceNotFound_whenProductDoesNotExist() {
+        ProductRequest request = new ProductRequest("New Name", "New description", 20.);
+        AuthenticatedUser currentUser = new AuthenticatedUser("user-1", "owner@test.com", "USER");
+
+        when(productRepository.findById("1")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> productService.updateProduct("1", request, currentUser))
+                .isInstanceOf(ResourceNotFoundException.class);
     }
 }

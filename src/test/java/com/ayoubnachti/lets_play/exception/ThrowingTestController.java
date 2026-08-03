@@ -1,8 +1,10 @@
 package com.ayoubnachti.lets_play.exception;
 
-import java.util.NoSuchElementException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.*;
+
+import com.ayoubnachti.lets_play.exceptions.custom.ResourceNotFoundException;
+
 import jakarta.validation.Valid;
 
 @RestController
@@ -10,7 +12,7 @@ class ThrowingTestController {
 
     @GetMapping("/test/not-found")
     public void notFound() {
-        throw new NoSuchElementException("Product not found");
+        throw new ResourceNotFoundException("Product", "test-id");
     }
 
     @GetMapping("/test/duplicate")
