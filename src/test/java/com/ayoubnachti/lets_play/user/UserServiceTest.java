@@ -2,6 +2,10 @@ package com.ayoubnachti.lets_play.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
@@ -13,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import com.ayoubnachti.lets_play.dtos.UserResponse;
 import com.ayoubnachti.lets_play.dtos.UserUpdateRequest;
@@ -20,6 +25,7 @@ import com.ayoubnachti.lets_play.enums.Role;
 import com.ayoubnachti.lets_play.exceptions.custom.ResourceNotFoundException;
 import com.ayoubnachti.lets_play.models.User;
 import com.ayoubnachti.lets_play.repositories.UserRepository;
+import com.ayoubnachti.lets_play.security.AuthenticatedUser;
 import com.ayoubnachti.lets_play.services.UserService;
 
 @ExtendWith(MockitoExtension.class)
@@ -140,5 +146,38 @@ class UserServiceTest {
 
         assertThatThrownBy(() -> userService.updateUser("missing", request))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void deletesUser_whenUserExistsAndNotSelf() {
+        AuthenticatedUser currentUser = new AuthenticatedUser("admin-1", "admin@test.com", "ADMIN");
+
+        when(userRepository.existsById("target-1")).thenReturn(true);
+
+        userService.deleteUser("target-1", currentUser);
+
+        verify(userRepository).deleteById("target-1");
+    }
+
+    @Test
+    void deleteUser_throwsResourceNotFound_whenUserDoesNotExist() {
+        AuthenticatedUser currentUser = new AuthenticatedUser("admin-1", "admin@test.com", "ADMIN");
+
+        when(userRepository.existsById("missing")).thenReturn(false);
+
+        assertThatThrownBy(() -> userService.deleteUser("missing", currentUser))
+                .isInstanceOf(ResourceNotFoundException.class);
+
+        verify(userRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void deleteUser_throwsAccessDenied_whenDeletingSelf() {
+        AuthenticatedUser currentUser = new AuthenticatedUser("admin-1", "admin@test.com", "ADMIN");
+
+        assertThatThrownBy(() -> userService.deleteUser("admin-1", currentUser))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verifyNoInteractions(userRepository);
     }
 }
