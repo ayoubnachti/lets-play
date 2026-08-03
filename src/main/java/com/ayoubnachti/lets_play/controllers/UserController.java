@@ -6,12 +6,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ayoubnachti.lets_play.dtos.UserResponse;
+import com.ayoubnachti.lets_play.dtos.UserUpdateRequest;
 import com.ayoubnachti.lets_play.services.UserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -31,5 +35,13 @@ public class UserController {
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<UserResponse> getUserById(@PathVariable String id) {
     return ResponseEntity.ok(userService.findById(id));
+  }
+
+  @PutMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<UserResponse> updateUser(
+      @PathVariable String id,
+      @Valid @RequestBody UserUpdateRequest request) {
+    return ResponseEntity.ok(userService.updateUser(id, request));
   }
 }
