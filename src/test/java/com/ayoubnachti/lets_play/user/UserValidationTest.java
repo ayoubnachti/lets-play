@@ -64,8 +64,6 @@ class UserValidationTest {
 
     Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-    violations.forEach(v -> System.out.println(v.getPropertyPath() + " -> " + v.getMessage()));
-
     assertEquals(1, violations.size());
   }
 
