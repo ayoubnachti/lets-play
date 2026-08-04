@@ -1,0 +1,7 @@
+jwt:
+  secret: test-only-secret-do-not-use-in-production
+
+admin:
+  seed:
+    email: admin-test@example.com
+    password: test-only-password
