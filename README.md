@@ -26,19 +26,42 @@ and role-based access control (admin vs. user).
    ```
    cp .env.example .env
    ```
-   
 2. Generate a JWT signing secret:
    ```
    openssl rand -base64 32
    ```
    Paste the result into `JWT_SECRET` in `.env`.
-
 3. Set `ADMIN_PASSWORD` (and optionally change `ADMIN_EMAIL`) in `.env`.
    On first startup, an admin account is seeded automatically from these
    values — safe to leave running, it's a no-op on every startup after
    the first (it checks whether the account already exists first).
 
 `.env` is gitignored — never commit real secrets.
+
+## HTTPS (optional, local demo)
+
+Off by default — the app runs over plain HTTP unless you explicitly enable
+this. To demo TLS locally with a self-signed certificate:
+
+```
+keytool -genkeypair -alias letsplay -keyalg RSA -keysize 2048 \
+  -storetype PKCS12 -keystore keystore.p12 -validity 3650
+```
+
+Run this from the project root (`keystore.p12` is gitignored — never
+commit it). Then in `.env`, set:
+
+```
+SSL_ENABLED=true
+SSL_KEYSTORE_PASSWORD=<the password you set above>
+```
+
+The app will then be reachable at `https://localhost:8080` instead of
+`http://`. Since it's self-signed, browsers will show a security warning,
+and Postman/curl need certificate verification disabled to connect
+(`curl -k`, or the equivalent toggle in Postman) — expected for a
+self-signed cert, see [ADR 0005](docs/decisions/0005%20—%20Self-signed%20TLS%20via%20server.ssl%20for%20local%20HTTPS.md)
+for why.
 
 ## Running with Docker (recommended)
 
