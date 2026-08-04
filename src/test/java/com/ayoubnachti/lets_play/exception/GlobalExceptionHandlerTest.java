@@ -38,7 +38,6 @@ class GlobalExceptionHandlerTest {
     @Test
     void notFoundExceptionReturns404() throws Exception {
         mockMvc.perform(get("/test/not-found"))
-                .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Not Found"))
                 .andExpect(jsonPath("$.detail").value("Product not found: test-id"));

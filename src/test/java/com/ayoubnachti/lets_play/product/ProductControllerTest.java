@@ -69,7 +69,6 @@ class ProductControllerTest {
 				.content("""
 						{"name": "Chair", "description": "Wooden chair", "price": 49.99}
 						"""))
-				.andDo(print())
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.id").value("product-1"))
 				.andExpect(jsonPath("$.userId").value("user-123"));
