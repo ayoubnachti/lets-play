@@ -45,8 +45,6 @@ public class ProductController {
             @Valid @RequestBody ProductRequest request,
             @AuthenticationPrincipal AuthenticatedUser currentUser) {
 
-        System.out.println("Context auth: " + SecurityContextHolder.getContext().getAuthentication());
-
         ProductResponse response = productService.createProduct(request, currentUser.id());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

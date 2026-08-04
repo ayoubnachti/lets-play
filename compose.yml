@@ -9,5 +9,20 @@ services:
     volumes:
       - mongo-data:/data/db
 
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lets-play-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env   
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/lets-play
+    depends_on:
+      - mongodb
+
 volumes:
   mongo-data:

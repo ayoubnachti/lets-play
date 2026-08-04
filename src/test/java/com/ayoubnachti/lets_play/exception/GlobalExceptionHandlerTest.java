@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import com.ayoubnachti.lets_play.services.JwtService;
 
@@ -25,19 +24,10 @@ class GlobalExceptionHandlerTest {
     @MockitoBean
     private JwtService jwtService;
 
-    @Autowired
-    private RequestMappingHandlerMapping handlerMapping;
-
-    @Test
-    void debugPrintRegisteredMappings() {
-        System.out.println("-----------------------------------------------------------------------------");
-        handlerMapping.getHandlerMethods().forEach((mapping, method) -> System.out.println(mapping + " -> " + method));
-        System.out.println("-----------------------------------------------------------------------------");
-    }
-
     @Test
     void notFoundExceptionReturns404() throws Exception {
         mockMvc.perform(get("/test/not-found"))
+                .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Not Found"))
                 .andExpect(jsonPath("$.detail").value("Product not found: test-id"));
