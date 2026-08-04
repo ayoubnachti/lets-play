@@ -13,6 +13,11 @@ jwt:
 
 server:
   port: 8080
+  ssl:
+    enabled: ${SSL_ENABLED:false}
+    key-store: ${SSL_KEYSTORE_PATH:file:./keystore.p12}
+    key-store-password: ${SSL_KEYSTORE_PASSWORD:}
+    key-store-type: PKCS12
 
 admin:
   seed:
