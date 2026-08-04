@@ -60,8 +60,7 @@ The app will then be reachable at `https://localhost:8080` instead of
 `http://`. Since it's self-signed, browsers will show a security warning,
 and Postman/curl need certificate verification disabled to connect
 (`curl -k`, or the equivalent toggle in Postman) — expected for a
-self-signed cert, see [ADR 0005](docs/decisions/0005%20—%20Self-signed%20TLS%20via%20server.ssl%20for%20local%20HTTPS.md)
-for why.
+self-signed cert with no CA behind it.
 
 ## Running with Docker (recommended)
 
